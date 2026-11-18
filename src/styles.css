@@ -1,0 +1,592 @@
+:root {
+  --gold-light: #ffe7ad;
+  --gold-main: #e3c383;
+  --gold-dim: rgba(227, 195, 131, 0.36);
+  --ivory: #f8f4ea;
+  --ivory-muted: rgba(248, 244, 234, 0.75);
+  --celestial-cyan: #7ceeff;
+  --anemo-mint: #6ef7c8;
+  --glass-bg: rgba(19, 27, 46, 0.62);
+  --glass-bg-strong: rgba(16, 23, 40, 0.82);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a1428;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--ivory);
+}
+
+.canvas-host {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  cursor: grab;
+}
+
+.canvas-host:active {
+  cursor: grabbing;
+}
+
+/* Genshin Celestial HUD Overlay */
+.hud-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.pointer-auto {
+  pointer-events: auto;
+}
+
+/* Top-Left Minimap & Status */
+.top-left-cluster {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.minimap-wrapper {
+  position: relative;
+  width: 158px;
+  height: 158px;
+  border-radius: 50%;
+  padding: 5px;
+  background: radial-gradient(circle, rgba(25, 38, 66, 0.75), rgba(14, 21, 38, 0.88));
+  border: 1.5px solid var(--gold-main);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.38),
+    0 0 0 3px rgba(227, 195, 131, 0.14),
+    inset 0 0 18px rgba(124, 238, 255, 0.15);
+  backdrop-filter: blur(12px);
+}
+
+.minimap-cardinal {
+  position: absolute;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold-light);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  z-index: 3;
+}
+.minimap-cardinal.n { top: 3px; left: 50%; transform: translateX(-50%); }
+.minimap-cardinal.s { bottom: 3px; left: 50%; transform: translateX(-50%); opacity: 0.7; }
+.minimap-cardinal.e { right: 5px; top: 50%; transform: translateY(-50%); opacity: 0.7; }
+.minimap-cardinal.w { left: 5px; top: 50%; transform: translateY(-50%); opacity: 0.7; }
+
+.player-badge-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.genshin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--gold-dim);
+  backdrop-filter: blur(12px);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ivory);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.genshin-pill .gold-dot {
+  color: var(--gold-light);
+  font-size: 11px;
+}
+
+.telemetry-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.telemetry-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(16, 24, 42, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  color: var(--ivory-muted);
+}
+
+/* Top-Center 8-Session Celestial Bar */
+.top-center-sessions {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 5px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1.2px solid var(--gold-dim);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32);
+  gap: 2px;
+  max-width: calc(100vw - 680px);
+  overflow-x: auto;
+}
+
+/* Center Region Title Banner (Genshin Area Discovery Style) */
+.region-banner {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.region-banner.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.region-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.region-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.region-line {
+  width: 68px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-main), transparent);
+}
+
+.region-title {
+  font-family: 'Cinzel', 'Plus Jakarta Sans', serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.65),
+    0 0 24px rgba(255, 231, 173, 0.45);
+}
+
+/* Top-Right Action Bar */
+.top-right-bar {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.celestial-icon-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.2px solid var(--gold-dim);
+  background: var(--glass-bg);
+  color: var(--ivory);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+.celestial-icon-btn:hover,
+.celestial-icon-btn.active {
+  border-color: var(--gold-light);
+  background: rgba(38, 53, 88, 0.82);
+  color: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.36),
+    0 0 14px rgba(255, 231, 173, 0.32);
+}
+
+.celestial-fly-cta {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1.3px solid var(--gold-main);
+  background: linear-gradient(135deg, rgba(35, 68, 112, 0.78), rgba(24, 42, 78, 0.85));
+  color: var(--gold-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.22s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.32);
+}
+
+.celestial-fly-cta.flying-on {
+  background: linear-gradient(135deg, rgba(42, 138, 152, 0.85), rgba(32, 86, 145, 0.88));
+  border-color: var(--celestial-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 22px rgba(124, 238, 255, 0.45);
+}
+
+.celestial-fly-cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.time-quick-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1.2px solid var(--gold-dim);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  gap: 3px;
+}
+
+.time-chip-btn {
+  height: 34px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ivory-muted);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.time-chip-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.time-chip-btn.active {
+  background: linear-gradient(135deg, rgba(227, 195, 131, 0.30), rgba(124, 238, 255, 0.22));
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+}
+
+.key-hint-mini {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ivory);
+}
+
+/* Stamina / Wind Energy Ring near center-right */
+.stamina-arc-box {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 96px);
+  transform: translateY(-50%);
+  transition: opacity 0.3s ease;
+}
+
+/* Updraft prompt */
+.updraft-toast {
+  position: absolute;
+  bottom: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(20, 56, 68, 0.78);
+  border: 1px solid var(--anemo-mint);
+  color: #d8fff2;
+  font-size: 13px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(110, 247, 200, 0.3);
+}
+
+/* Bottom Bar: Quick Landmarks (Left) & Controls Legend (Right) */
+.bottom-left-bar {
+  position: absolute;
+  bottom: 22px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-travel-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold-light);
+  padding-left: 4px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.quick-travel-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.landmark-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--gold-dim);
+  background: var(--glass-bg);
+  color: var(--ivory);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.landmark-chip:hover {
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+  background: rgba(34, 48, 82, 0.82);
+  transform: translateY(-1px);
+}
+
+.bottom-right-controls {
+  position: absolute;
+  bottom: 22px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  border: 1px solid var(--gold-dim);
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+  color: var(--ivory-muted);
+}
+
+.ctrl-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kbd {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(248, 244, 234, 0.14);
+  border: 1px solid rgba(227, 195, 131, 0.35);
+  color: var(--gold-light);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Genshin Celestial Modal / Drawer Card */
+.celestial-panel {
+  position: absolute;
+  top: 82px;
+  right: 24px;
+  width: 348px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: var(--glass-bg-strong);
+  border: 1.2px solid var(--gold-main);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  z-index: 25;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(227, 195, 131, 0.24);
+}
+
+.panel-title {
+  font-family: 'Cinzel', 'Plus Jakarta Sans', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-close {
+  background: transparent;
+  border: none;
+  color: var(--ivory-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+}
+.panel-close:hover {
+  color: #ffffff;
+}
+
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--ivory-muted);
+  margin-bottom: 7px;
+}
+
+.field-val {
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+.seg-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.seg-row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+
+.seg-btn {
+  padding: 8px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(227, 195, 131, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ivory-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.seg-btn:hover {
+  border-color: var(--gold-main);
+  color: var(--ivory);
+}
+
+.seg-btn.selected {
+  background: linear-gradient(135deg, rgba(227, 195, 131, 0.28), rgba(124, 238, 255, 0.18));
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+}
+
+.gold-slider {
+  width: 100%;
+  accent-color: #e5c683;
+  cursor: pointer;
+}
+
+.primary-gold-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--gold-light);
+  background: linear-gradient(135deg, #ebd096, #c9a159);
+  color: #182032;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.primary-gold-btn:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+/* Hidden HUD minimal restore button */
+.restore-hud-btn {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 30;
+  opacity: 0.55;
+}
+.restore-hud-btn:hover {
+  opacity: 1;
+}
+
+/* Drag & Drop VRM Overlay */
+.dropzone-banner {
+  position: fixed;
+  inset: 18px;
+  border: 2px dashed var(--gold-light);
+  border-radius: 24px;
+  background: rgba(14, 24, 48, 0.76);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .bottom-right-controls {
+    display: none;
+  }
+  .region-title {
+    font-size: 18px;
+  }
+}
